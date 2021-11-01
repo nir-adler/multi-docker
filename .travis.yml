@@ -1,0 +1,35 @@
+sudo: required
+
+
+services:
+  - docker
+
+before_install:
+  - echo "aaaa"
+
+script:
+  - echo "bbb"
+
+after_success:
+  - docker build -t dogliy/multi-client ./client
+  - docker build -t dogliy/multi-nginx ./nginx
+  - docker build -t dogliy/multi-backend ./backend
+  - docker build -t dogliy/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push dogliy/multi-client
+  - docker push dogliy/multi-nginx
+  - docker push dogliy/multi-backend
+  - docker push dogliy/multi-worker
+
+
+deploy:
+  provider: elasticbeanstalk
+  region: "eu-west-1"
+  app: "docker-learn"
+  env: "Dockerlearn-env"
+  bucket_name: "elasticbeanstalk-eu-west-1-745665539209"
+  bucket_path: "docker-learn"
+  on:
+    branch: master
+  access_key_id: $AWS_ID
+  secret_access_key: $AWS_SECRET
